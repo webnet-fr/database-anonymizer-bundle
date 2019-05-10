@@ -30,9 +30,14 @@ class AnonymizeCommandPass implements CompilerPassInterface
         );
         $anonymizeCommandDefinition->addMethodCall('setDefaultConfig', [$defaultConfig]);
 
-        // Pass docntrine dbal registry to the command if it exists.
+        // Pass the Doctrine registry to the command if it exists.
         if ($container->hasDefinition('doctrine')) {
             $anonymizeCommandDefinition->addMethodCall('setRegistry', [new Reference('doctrine')]);
+        }
+
+        // Pass the Doctrine annotation reader to the command if it exists.
+        if ($container->hasDefinition('annotation_reader')) {
+            $anonymizeCommandDefinition->addMethodCall('enableAnnotations', [new Reference('annotation_reader')]);
         }
     }
 }

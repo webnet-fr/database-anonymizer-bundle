@@ -2,6 +2,7 @@
 
 namespace WebnetFr\DatabaseAnonymizerBundle\Command;
 
+use Doctrine\Common\Annotations\Reader;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,11 +24,6 @@ class AnonymizeCommand extends Command
     protected static $defaultName = 'webnet-fr:anonymizer:anonymize';
 
     /**
-     * @var RegistryInterface
-     */
-    private $registry;
-
-    /**
      * @var GeneratorFactoryInterface
      */
     private $generatorFactory;
@@ -40,6 +36,16 @@ class AnonymizeCommand extends Command
     private $defaultConfig;
 
     /**
+     * @var RegistryInterface
+     */
+    private $registry;
+
+    /**
+     * @var Reader
+     */
+    private $annotationReader;
+
+    /**
      * @param GeneratorFactoryInterface $generatorFactory
      */
     public function __construct(GeneratorFactoryInterface $generatorFactory)
@@ -50,17 +56,23 @@ class AnonymizeCommand extends Command
     }
 
     /**
-     * Set registry
+     * Set Doctrine registry.
      *
      * @param RegistryInterface $registry
-     *
-     * @return $this
      */
-    public function setRegistry($registry)
+    public function setRegistry(RegistryInterface $registry)
     {
         $this->registry = $registry;
+    }
 
-        return $this;
+    /**
+     * Enable annotations.
+     *
+     * @param Reader $annotationReader
+     */
+    public function enableAnnotations(Reader $annotationReader)
+    {
+        $this->annotationReader = $annotationReader;
     }
 
     /**
@@ -91,6 +103,8 @@ class AnonymizeCommand extends Command
             ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file.')
             ->addOption('url', 'U', InputOption::VALUE_REQUIRED, 'Database connection string.')
             ->addOption('connection', 'C', InputOption::VALUE_REQUIRED, 'Name of the connection to database.')
+            ->addOption('annotations', 'a', InputOption::VALUE_NONE, 'Use annotations. "em" option must be provided.')
+            ->addOption('em', null, InputOption::VALUE_REQUIRED, 'Entity manager.')
         ;
     }
 
@@ -106,21 +120,29 @@ class AnonymizeCommand extends Command
             return;
         }
 
+        $em = null;
+        $connection = null;
+        $configName = null;
+
         // Retrieve database connection.
-        if ($dbUrl = $input->getOption('db_url')) {
+        if ($dbUrl = $input->getOption('url')) {
             $connection = $this->getConnection($dbUrl);
-            $connectionName = 'default';
+            $configName = 'default';
+        } elseif ($emName = $input->getOption('em')) {
+            $em = $this->registry->getEntityManager($emName);
+            $connection = $em->getConnection();
+            $configName = $emName;
         } else {
             if (!$this->registry) {
                 throw new \LogicException('You must activete doctrine dbal component');
             }
 
-            $connectionName = $input->getOption('connection');
-            if (!$connectionName) {
-                $connectionName = $this->registry->getDefaultConnectionName();
+            $configName = $input->getOption('connection');
+            if (!$configName) {
+                $configName = $this->registry->getDefaultConnectionName();
             }
 
-            $connection = $this->registry->getConnection($connectionName);
+            $connection = $this->registry->getConnection($configName);
         }
 
         if (!$connection) {
@@ -128,7 +150,16 @@ class AnonymizeCommand extends Command
         }
 
         // Retrieve anonymizer configuration.
-        if ($configFile = $input->getOption('config')) {
+        if ($input->getOption('annotations')) {
+            if (!$em) {
+                $output->writeln('<error>You must pass entity manager name in "--em" option. Pass "--em=default" if there is only one entity manager.</error>');
+
+                return;
+            }
+
+            // TODO: Read annotations of all entities.
+            throw new \Exception('not implemented');
+        } elseif ($configFile = $input->getOption('config')) {
             $configFilePath = realpath($input->getArgument('config'));
             if (!is_file($configFilePath)) {
                 $output->writeln(sprintf('<error>Configuration file "%s" does not exist.</error>', $configFile));
@@ -138,13 +169,13 @@ class AnonymizeCommand extends Command
 
             $config = $this->getConfigFromFile($configFilePath);
         } elseif ($this->defaultConfig) {
-            if (!array_key_exists($connectionName, $this->defaultConfig['connections'])) {
-                throw new \LogicException('You must configure anonymizer for "'.$connectionName.'" connection');
+            if (!array_key_exists($configName, $this->defaultConfig['connections'])) {
+                throw new \LogicException('You must configure anonymizer for "'.$configName.'" connection');
             };
 
-            $config = $this->defaultConfig['connections'][$connectionName];
+            $config = $this->defaultConfig['connections'][$configName];
         } else {
-            throw new \InvalidArgumentException('You must either provide the path of configuration file or confiqure the bundle');
+            throw new \InvalidArgumentException('You must either provide the path of configuration file or confiqure the bundle or define annotations.');
         }
 
         $targetFactory = new TargetFactory($this->generatorFactory);
