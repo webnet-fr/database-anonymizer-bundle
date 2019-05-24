@@ -127,6 +127,172 @@ doctrine:
                 # driver, host, user, password, etc.
 ```
 
+
+### How add your own custom generator ?
+
+If you are not satisfied by the generators Faker gives you you can always add your own. 
+
+Imagine you have an entity that stores the users' orders: 
+
+```php
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Users' orders.
+ *
+ * @ORM\Table(name="orders")
+ * @ORM\Entity
+ */
+class Orders
+{
+    /**
+     * History of all user's comments. 
+     * @var string[]
+     *
+     * @ORM\Column(name="comments", type="array", nullable=true)
+     */
+    public $comments;
+}
+```
+
+And you would like to anonymize each comment in this array:
+
+```yaml
+webnet_fr_database_anonymizer:
+    tables:
+        # ...
+
+        orders:
+            fields:
+                # ...
+                comments:
+                    generator: comment_history # your generator
+```
+
+In most cases you'll have to add two classes:
+
+1. A factory:
+
+```php
+namespace App\DatabaseAnonymizer;
+
+use Faker\Factory;
+use WebnetFr\DatabaseAnonymizer\Exception\UnsupportedGeneratorException;
+use WebnetFr\DatabaseAnonymizer\Generator\GeneratorInterface;
+use WebnetFr\DatabaseAnonymizer\GeneratorFactory\GeneratorFactoryInterface;
+
+/**
+ * The factory that creates a generator out of provided configuration.
+ * It is a Symfony service.
+ */
+class CommentHistoryGeneratorFactory implements GeneratorFactoryInterface
+{
+    /**
+     * @param array $config
+     *        An array of the configuration for field to anonymize. It contains
+     *        all specified entries, like "generator", "unique", "date_format",
+     *        "my_custom_entry", etc.
+     *
+     * @throws \WebnetFr\DatabaseAnonymizer\Exception\UnsupportedGeneratorException
+     *          The factory MUST throw "UnsupportedGeneratorException" if it is
+     *          impossible to create the generator for provided configuration.
+     *
+     * @return GeneratorInterface
+     */
+    public function getGenerator($config): GeneratorInterface
+    {
+        // Check if the field should be anonymized with "comment_history" encoder.
+        $generatorKey = $config['generator'];
+        if ('comment_history' !== $generatorKey) {
+            throw new UnsupportedGeneratorException($generatorKey.' generator is not known');
+        }
+
+        // Retrieve any configuration values you need.
+        $locale = $config['locale'] ?? 'en_US';
+        $minMessagesNb = $config['min_messages_nb'] ?? 1;
+        $maxMessagesNb = $config['max_messages_nb'] ?? 10;
+        
+        // Create and configure generator.
+        // Usually there is ONE generator instance for ONE field to anonymize
+        // because there could be different config values for differet fields
+        // even though these fields are anoymized with the same 
+        // "comment_history" generator.
+        $faker = Factory::create($locale);
+        $generator = new CommentHistoryGenerator($faker);
+        $generator->setMinMessagesNb($minMessagesNb);
+        $generator->setMaxMessagesNb($maxMessagesNb);
+
+        return $generator;
+    }
+}
+```
+
+Since `CommentHistoryGeneratorFactory` is a Symfony service it can depend on
+any other service (for example on `UserPasswordEncoderInterface` to be able to encode
+passwords).
+
+If you use `autodiscover` and `autoconfiguraiton` of Symfony services 
+that is all you need. Otherwise you need to register the factory as a service:
+
+```yaml
+services:
+    App\DatabaseAnonymizer\CommentHistoryGeneratorFactory:
+        tags: ["database_anonymizer.generator_factory"]
+```
+
+
+2. A generator:
+
+```php
+<?php
+
+namespace App\DatabaseAnonymizer;
+
+use Faker\Generator;
+use WebnetFr\DatabaseAnonymizer\Generator\GeneratorInterface;
+
+/**
+ * Anonmyizer generator that generates comment history.
+ */
+class CommentHistoryGenerator implements GeneratorInterface
+{
+    /**
+     * Faker generator
+     * @var Generator
+     */
+    private $faker;
+
+    /**
+     * Minimum number of comments in history.
+     * @var int
+     */
+    private $minMessagesNb = 1;
+
+    /**
+     * Maximum number of comments in history.
+     * @var int
+     */
+    private $maxMessagesNb = 10;
+    
+    // Constructors, setters.
+
+    /**
+     * Generates new random value for each line.
+     */
+    public function generate()
+    {
+        $comments = [];
+        foreach (range(0, mt_rand(1, 10)) as $i) {
+            $comments[] = $this->faker->realText();
+        };
+
+        return serialize($comments);
+    }
+}
+```
+
+
+[General Data Protection Regulation]: https://en.wikipedia.org/wiki/General_Data_Protection_Regulation
 [database anonymizer]: https://github.com/webnet-fr/database-anonymizer
 [Faker]: https://github.com/fzaninotto/Faker
 [how to configure the fields to anonymize]: https://github.com/webnet-fr/database-anonymizer#how-to-configure-the-fields-to-anonymize-
