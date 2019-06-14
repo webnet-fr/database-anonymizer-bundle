@@ -130,7 +130,8 @@ doctrine:
 - Using annotations:
 
 If you create [entities] you can configure anonymization with annotations :
-```
+
+```php
 use Doctrine\ORM\Mapping as ORM;
 use WebnetFr\DatabaseAnonymizerBundle\Annotation as Anonymize;
 
