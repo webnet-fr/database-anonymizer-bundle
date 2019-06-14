@@ -127,6 +127,63 @@ doctrine:
                 # driver, host, user, password, etc.
 ```
 
+- Using annotations:
+
+If you create [entities] you can configure anonymization with annotations :
+```
+use Doctrine\ORM\Mapping as ORM;
+use WebnetFr\DatabaseAnonymizerBundle\Annotation as Anonymize;
+
+/**
+ * @ORM\Table(name="orders")
+ * @ORM\Entity
+ * 
+ * This annotation marks the entities to anonymize.
+ * @Anonymize\Table()
+ */
+class Orders
+{
+    /**
+     * @ORM\Column(name="id", type="integer", nullable=false, options={"unsigned"=true})
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    public $id;
+
+    /**
+     * @ORM\Column(name="address", type="string", length=256, nullable=true)
+     * @Anonymize\Field(generator="faker", formatter="address")
+     */
+    public $address;
+
+    /**
+     * @ORM\Column(name="zip_code", type="string", length=10, nullable=true)
+     * @Anonymize\Field(generator="faker", formatter="postcode")
+     */
+    public $zipCode;
+
+    /**
+     * @ORM\Column(name="comment", type="text", length=0, nullable=true)
+     * @Anonymize\Field(generator="faker", formatter="text", arguments={300})
+     */
+    public $comment;
+
+    /**
+     * @ORM\Column(name="created_at", type="datetime", nullable=true)
+     * @Anonymize\Field(generator="faker", formatter="dateTime", date_format="Y-m-d H:i:s")
+     */
+    public $createdAt;
+
+    /**
+     * @ORM\Column(name="comment_history", type="array", nullable=true)
+     * 
+     * A custom generator with its custom arguments.
+     * @Anonymize\Field(generator="comment_history", max_messages_nb=5)
+     */
+    public $commentHistory;
+}
+```
+
 
 ### How add your own custom generator ?
 
@@ -296,3 +353,4 @@ class CommentHistoryGenerator implements GeneratorInterface
 [database anonymizer]: https://github.com/webnet-fr/database-anonymizer
 [Faker]: https://github.com/fzaninotto/Faker
 [how to configure the fields to anonymize]: https://github.com/webnet-fr/database-anonymizer#how-to-configure-the-fields-to-anonymize-
+[entities]: https://symfony.com/doc/current/doctrine.html
