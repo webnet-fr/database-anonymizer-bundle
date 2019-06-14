@@ -3,6 +3,7 @@
 namespace WebnetFr\DatabaseAnonymizerBundle\Command;
 
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,6 +14,7 @@ use WebnetFr\DatabaseAnonymizer\Anonymizer;
 use WebnetFr\DatabaseAnonymizer\Command\AnonymizeCommandTrait;
 use WebnetFr\DatabaseAnonymizer\Config\TargetFactory;
 use WebnetFr\DatabaseAnonymizer\GeneratorFactory\GeneratorFactoryInterface;
+use WebnetFr\DatabaseAnonymizerBundle\Config\AnnotationConfigFactory;
 
 /**
  * @author Vlad Riabchenko <vriabchenko@webnet.fr>
@@ -41,9 +43,9 @@ class AnonymizeCommand extends Command
     private $registry;
 
     /**
-     * @var Reader
+     * @var AnnotationConfigFactory
      */
-    private $annotationReader;
+    private $annotationConfigFactory;
 
     /**
      * @param GeneratorFactoryInterface $generatorFactory
@@ -68,11 +70,11 @@ class AnonymizeCommand extends Command
     /**
      * Enable annotations.
      *
-     * @param Reader $annotationReader
+     * @param AnnotationConfigFactory $annotationConfigFactory
      */
-    public function enableAnnotations(Reader $annotationReader)
+    public function enableAnnotations(AnnotationConfigFactory $annotationConfigFactory)
     {
-        $this->annotationReader = $annotationReader;
+        $this->annotationConfigFactory = $annotationConfigFactory;
     }
 
     /**
@@ -157,8 +159,13 @@ class AnonymizeCommand extends Command
                 return;
             }
 
-            // TODO: Read annotations of all entities.
-            throw new \Exception('not implemented');
+            if (!$this->annotationConfigFactory) {
+                $output->writeln('<error>You must enable Doctrine annotations: "annotations.reader" service is required.</error>');
+
+                return;
+            }
+
+            $config = $this->annotationConfigFactory->getConfig($em->getMetadataFactory()->getAllMetadata());
         } elseif ($configFile = $input->getOption('config')) {
             $configFilePath = realpath($input->getArgument('config'));
             if (!is_file($configFilePath)) {

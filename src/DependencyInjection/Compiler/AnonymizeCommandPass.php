@@ -5,8 +5,11 @@ namespace WebnetFr\DatabaseAnonymizerBundle\DependencyInjection\Compiler;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use WebnetFr\DatabaseAnonymizer\ConfigGuesser\ConfigGuesser;
 use WebnetFr\DatabaseAnonymizerBundle\Command\AnonymizeCommand;
+use WebnetFr\DatabaseAnonymizerBundle\Config\AnnotationConfigFactory;
 use WebnetFr\DatabaseAnonymizerBundle\DependencyInjection\Configuration;
 
 /**
@@ -35,9 +38,18 @@ class AnonymizeCommandPass implements CompilerPassInterface
             $anonymizeCommandDefinition->addMethodCall('setRegistry', [new Reference('doctrine')]);
         }
 
-        // Pass the Doctrine annotation reader to the command if it exists.
-        if ($container->hasDefinition('annotation_reader')) {
-            $anonymizeCommandDefinition->addMethodCall('enableAnnotations', [new Reference('annotation_reader')]);
+        // Enable Doctrine annotations.
+        if ($container->hasDefinition('annotations.reader')) {
+            $annotationConfigFactoryDefinition = new Definition(
+                AnnotationConfigFactory::class,
+                [
+                    new Reference('annotations.reader'),
+                    new Reference(ConfigGuesser::class),
+                ]
+            );
+            $container->setDefinition(AnnotationConfigFactory::class, $annotationConfigFactoryDefinition);
+
+            $anonymizeCommandDefinition->addMethodCall('enableAnnotations', [new Reference(AnnotationConfigFactory::class)]);
         }
     }
 }

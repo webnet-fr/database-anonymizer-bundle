@@ -4,13 +4,14 @@ namespace WebnetFr\DatabaseAnonymizerBundle\Annotation;
 
 /**
  * @Annotation
- * @Target("PROPERTY")
+ * @Target("CLASS")
+ *
  * @author Vlad Riabchenko <vriabchenko@webnet.fr>
  */
-class Anonymize
+class Table
 {
     /**
-     * @var string
+     * @var bool
      */
-    public $formatter;
+    public $guess = false;
 }
