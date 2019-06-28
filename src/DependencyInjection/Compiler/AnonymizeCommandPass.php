@@ -22,7 +22,11 @@ class AnonymizeCommandPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $anonymizeCommandDefinition = $container->getDefinition(AnonymizeCommand::class);
+        if (!$container->has(AnonymizeCommand::class)) {
+            return;
+        }
+
+        $anonymizeCommandDefinition = $container->findDefinition(AnonymizeCommand::class);
 
         // Pass default anonymizer configuration to the command.
         $configuration = new Configuration();
@@ -34,12 +38,12 @@ class AnonymizeCommandPass implements CompilerPassInterface
         $anonymizeCommandDefinition->addMethodCall('setDefaultConfig', [$defaultConfig]);
 
         // Pass the Doctrine registry to the command if it exists.
-        if ($container->hasDefinition('doctrine')) {
+        if ($container->has('doctrine')) {
             $anonymizeCommandDefinition->addMethodCall('setRegistry', [new Reference('doctrine')]);
         }
 
         // Enable Doctrine annotations.
-        if ($container->hasDefinition('annotations.reader')) {
+        if ($container->has('annotations.reader')) {
             $annotationConfigFactoryDefinition = new Definition(
                 AnnotationConfigFactory::class,
                 [

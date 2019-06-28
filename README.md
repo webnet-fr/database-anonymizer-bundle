@@ -1,5 +1,7 @@
 # Database anonymizer bundle
 
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/webnet-fr/database-anonymizer-bundle/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/webnet-fr/database-anonymizer-bundle)
+
 ### Why ?
 
 [General Data Protection Regulation] (GDPR) imposes strict rules in the domain of

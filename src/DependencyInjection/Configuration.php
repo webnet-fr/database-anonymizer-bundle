@@ -4,7 +4,6 @@ namespace WebnetFr\DatabaseAnonymizerBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use WebnetFr\DatabaseAnonymizer\Config\Configuration as BaseConfiguration;
 use WebnetFr\DatabaseAnonymizer\Config\ConfigurationTrait;
 
 /**

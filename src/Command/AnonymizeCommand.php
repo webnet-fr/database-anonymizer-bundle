@@ -116,7 +116,7 @@ class AnonymizeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $questionHelper = $this->getHelper('question');
-        $question = new ConfirmationQuestion('Are you sure you want to anonymize your database?', 'y');
+        $question = new ConfirmationQuestion('Are you sure you want to anonymize your database?', true);
 
         if (!$questionHelper->ask($input, $output, $question)) {
             return;
@@ -133,7 +133,7 @@ class AnonymizeCommand extends Command
         } elseif ($emName = $input->getOption('em')) {
             $em = $this->registry->getEntityManager($emName);
             $connection = $em->getConnection();
-            $configName = $emName;
+            $configName = (string) $emName;
         } else {
             if (!$this->registry) {
                 throw new \LogicException('You must activete doctrine dbal component');
@@ -175,7 +175,7 @@ class AnonymizeCommand extends Command
             }
 
             $config = $this->getConfigFromFile($configFilePath);
-        } elseif ($this->defaultConfig) {
+        } elseif (!empty($this->defaultConfig)) {
             if (!array_key_exists($configName, $this->defaultConfig['connections'])) {
                 throw new \LogicException('You must configure anonymizer for "'.$configName.'" connection');
             };

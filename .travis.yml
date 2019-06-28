@@ -1,0 +1,25 @@
+language: php
+sudo: false
+dist: trusty
+
+before_install:
+  - composer self-update
+  - composer validate
+
+install:
+  - composer update --prefer-dist --no-interaction
+
+script:
+  - ./vendor/bin/phpunit --configuration tests/travis/$DB.travis.xml --coverage-clover clover.xml
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+jobs:
+  include:
+
+    - stage: Test
+      php: 7.1
+      env: DB=mysqli
+    - php: 7.2
+      env: DB=mysqli
