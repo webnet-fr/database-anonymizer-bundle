@@ -3,6 +3,7 @@
 namespace WebnetFr\DatabaseAnonymizerBundle\Command;
 
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Console\Command\Command;
@@ -104,6 +105,12 @@ class AnonymizeCommand extends Command
             ->setHelp('Anoymize database according to GDPR (General Data Protection Regulation).')
             ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Configuration file.')
             ->addOption('url', 'U', InputOption::VALUE_REQUIRED, 'Database connection string.')
+            ->addOption('type', 't', InputOption::VALUE_REQUIRED, 'Database type.')
+            ->addOption('host', 'H', InputOption::VALUE_REQUIRED, 'Database host.')
+            ->addOption('port', 'P', InputOption::VALUE_REQUIRED, 'Database port.')
+            ->addOption('database', 'd', InputOption::VALUE_REQUIRED, 'Database name.')
+            ->addOption('user', 'u', InputOption::VALUE_REQUIRED, 'User.')
+            ->addOption('password', 'p', InputOption::VALUE_REQUIRED, 'Password.')
             ->addOption('connection', 'C', InputOption::VALUE_REQUIRED, 'Name of the connection to database.')
             ->addOption('annotations', 'a', InputOption::VALUE_NONE, 'Use annotations. "em" option must be provided.')
             ->addOption('em', null, InputOption::VALUE_REQUIRED, 'Entity manager.')
@@ -126,9 +133,15 @@ class AnonymizeCommand extends Command
         $connection = null;
         $configName = null;
 
+
+        try {
+            $connection = $this->getConnectionFromInput($input);
+        } catch (DBALException $e) {
+            $connection = null;
+        }
+
         // Retrieve database connection.
-        if ($dbUrl = $input->getOption('url')) {
-            $connection = $this->getConnection($dbUrl);
+        if ($connection) {
             $configName = 'default';
         } elseif ($emName = $input->getOption('em')) {
             $em = $this->registry->getEntityManager($emName);
@@ -167,7 +180,7 @@ class AnonymizeCommand extends Command
 
             $config = $this->annotationConfigFactory->getConfig($em->getMetadataFactory()->getAllMetadata());
         } elseif ($configFile = $input->getOption('config')) {
-            $configFilePath = realpath($input->getArgument('config'));
+            $configFilePath = realpath($input->getOption('config'));
             if (!is_file($configFilePath)) {
                 $output->writeln(sprintf('<error>Configuration file "%s" does not exist.</error>', $configFile));
 

@@ -1,5 +1,7 @@
 # Database anonymizer bundle
 
+[![Build Status](https://travis-ci.org/webnet-fr/database-anonymizer-bundle.svg?branch=master)](https://travis-ci.org/webnet-fr/database-anonymizer-bundle)
+[![codecov](https://codecov.io/gh/webnet-fr/database-anonymizer-bundle/branch/master/graph/badge.svg)](https://codecov.io/gh/webnet-fr/database-anonymizer-bundle)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/webnet-fr/database-anonymizer-bundle/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/webnet-fr/database-anonymizer-bundle)
 
 ### Why ?
