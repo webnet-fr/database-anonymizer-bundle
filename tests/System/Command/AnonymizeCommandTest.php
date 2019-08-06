@@ -2,13 +2,17 @@
 
 namespace WebnetFr\DatabaseAnonymizerBundle\Tests\System\Command;
 
+use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\Common\Annotations\AnnotationReader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
+use WebnetFr\DatabaseAnonymizer\ConfigGuesser\ConfigGuesser;
 use WebnetFr\DatabaseAnonymizer\GeneratorFactory\ChainGeneratorFactory;
 use WebnetFr\DatabaseAnonymizer\GeneratorFactory\ConstantGeneratorFactory;
 use WebnetFr\DatabaseAnonymizer\GeneratorFactory\FakerGeneratorFactory;
 use WebnetFr\DatabaseAnonymizerBundle\Command\AnonymizeCommand;
+use WebnetFr\DatabaseAnonymizerBundle\Config\AnnotationConfigFactory;
 use WebnetFr\DatabaseAnonymizerBundle\Tests\System\SystemTestTrait;
 
 /**
@@ -27,7 +31,7 @@ class AnonymizeCommandTest extends TestCase
         $this->regenerateUsersOrders();
     }
 
-    public function testExecute()
+    public function testWithConfigFile()
     {
         $generator = new ChainGeneratorFactory();
         $generator->addFactory(new ConstantGeneratorFactory())
@@ -37,7 +41,6 @@ class AnonymizeCommandTest extends TestCase
             ->add(new AnonymizeCommand($generator));
 
         $commandTester = new CommandTester($command);
-
         $commandTester->setInputs(array('y'));
         $commandTester->execute([
             'command' => $command->getName(),
@@ -50,6 +53,42 @@ class AnonymizeCommandTest extends TestCase
             '--password' => $GLOBALS['db_password'],
         ]);
 
+        $this->doTestValues();
+    }
+
+    public function testWithAnnotations()
+    {
+        $generator = new ChainGeneratorFactory();
+        $generator->addFactory(new ConstantGeneratorFactory())
+            ->addFactory(new FakerGeneratorFactory());
+
+        $annotationReader = new AnnotationReader();
+        $configGuesser = new ConfigGuesser();
+        $annotationConfigFactory = new AnnotationConfigFactory($annotationReader, $configGuesser);
+        $anonymizeCommand = new AnonymizeCommand($generator);
+        $anonymizeCommand->enableAnnotations($annotationConfigFactory);
+
+        $registry = new Registry();
+
+        $command = (new Application('Database anonymizer', '0.0.1'))
+            ->add($anonymizeCommand);
+
+        $commandTester = new CommandTester($command);
+        $commandTester->setInputs(array('y'));
+        $commandTester->execute([
+            'command' => $command->getName(),
+            '--annotations' => true,
+            '--em' => 'default',
+        ]);
+
+        $this->doTestValues();
+    }
+
+    /**
+     * Test actual values.
+     */
+    private function doTestValues()
+    {
         $connection = $this->getConnection();
 
         $selectSQL = $connection->createQueryBuilder()
