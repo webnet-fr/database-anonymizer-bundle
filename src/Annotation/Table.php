@@ -14,4 +14,9 @@ class Table
      * @var bool
      */
     public $guess = false;
+
+    /**
+     * @var bool
+     */
+    public $truncate = false;
 }
