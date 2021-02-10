@@ -51,15 +51,15 @@ class AnnotationConfigFactory
 
             $tableName = $metadata->table['name'];
 
+            $config[$tableName] = [
+                'primary_key' => $metadata->identifier,
+                'fields' => [],
+	        ];
+
             if ($classAnnotation->truncate) {
                 $config[$tableName]['truncate'] = true;
                 continue;
             }
-
-            $config[$tableName] = [
-                'primary_key' => $metadata->identifier,
-                'fields' => [],
-            ];
 
             foreach ($metadata->fieldMappings as $fieldName => $fieldMapping) {
                 if (in_array($fieldName, $metadata->identifier)) {
