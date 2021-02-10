@@ -50,6 +50,12 @@ class AnnotationConfigFactory
             }
 
             $tableName = $metadata->table['name'];
+
+            if ($classAnnotation->truncate) {
+                $config[$tableName]['truncate'] = true;
+                continue;
+            }
+
             $config[$tableName] = [
                 'primary_key' => $metadata->identifier,
                 'fields' => [],
