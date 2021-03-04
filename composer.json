@@ -1,5 +1,5 @@
 {
-    "name": "webnet-fr/database-anonymizer-bundle",
+    "name": "prowebce/database-anonymizer-bundle",
     "type": "symfony-bundle",
     "description": "Database anonymizer bundle.",
     "keywords": [
