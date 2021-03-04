@@ -55,6 +55,11 @@ class AnnotationConfigFactory
                 'fields' => [],
             ];
 
+            if ($classAnnotation->truncate) {
+                $config[$tableName]['truncate'] = true;
+                continue;
+            }
+
             foreach ($metadata->fieldMappings as $fieldName => $fieldMapping) {
                 if (in_array($fieldName, $metadata->identifier)) {
                     continue;
