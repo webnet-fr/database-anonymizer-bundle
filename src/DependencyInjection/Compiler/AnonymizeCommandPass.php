@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use WebnetFr\DatabaseAnonymizer\Anonymizer;
 use WebnetFr\DatabaseAnonymizer\ConfigGuesser\ConfigGuesser;
 use WebnetFr\DatabaseAnonymizerBundle\Command\AnonymizeCommand;
 use WebnetFr\DatabaseAnonymizerBundle\Config\AnnotationConfigFactory;
@@ -55,5 +56,7 @@ class AnonymizeCommandPass implements CompilerPassInterface
 
             $anonymizeCommandDefinition->addMethodCall('enableAnnotations', [new Reference(AnnotationConfigFactory::class)]);
         }
+
+        $anonymizeCommandDefinition->addMethodCall('setAnonymizer', [new Reference(Anonymizer::class)]);
     }
 }
