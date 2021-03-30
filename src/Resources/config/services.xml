@@ -24,5 +24,8 @@
             <argument type="service" id="WebnetFr\DatabaseAnonymizer\ConfigGuesser\ConfigWriter"/>
             <tag name="console.command" command="webnet-fr:anonymizer:guess-config" />
         </service>
+        <service id="WebnetFr\DatabaseAnonymizer\Anonymizer" class="WebnetFr\DatabaseAnonymizer\Anonymizer">
+            <argument type="service" id="event_dispatcher" />
+        </service>
     </services>
 </container>

@@ -49,6 +49,11 @@ class AnonymizeCommand extends Command
     private $annotationConfigFactory;
 
     /**
+     * @var Anonymizer
+     */
+    private $anonymizer;
+
+    /**
      * @param GeneratorFactoryInterface $generatorFactory
      */
     public function __construct(GeneratorFactoryInterface $generatorFactory)
@@ -88,6 +93,13 @@ class AnonymizeCommand extends Command
     public function setDefaultConfig(array $defaultConfig)
     {
         $this->defaultConfig = $defaultConfig;
+
+        return $this;
+    }
+
+    public function setAnonymizer(Anonymizer $anonymizer)
+    {
+        $this->anonymizer = $anonymizer;
 
         return $this;
     }
@@ -202,7 +214,6 @@ class AnonymizeCommand extends Command
         $targetFactory->setConnection($connection);
         $targetTables = $targetFactory->createTargets($config);
 
-        $anonymizer = new Anonymizer();
-        $anonymizer->anonymize($connection, $targetTables);
+        $this->anonymizer->anonymize($connection, $targetTables);
     }
 }
