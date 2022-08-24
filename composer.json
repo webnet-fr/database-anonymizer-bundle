@@ -14,7 +14,7 @@
         "symfony/console": "^2.0.5|^3.0|^4.0|^5.0",
         "symfony/framework-bundle": "^4.0",
         "symfony/doctrine-bridge": "^4.2",
-        "prowebce/database-anonymizer": "0.0.5"
+        "prowebce/database-anonymizer": "0.0.7"
     },
     "require-dev": {
         "doctrine/annotations": "^1.6",
