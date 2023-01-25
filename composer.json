@@ -10,7 +10,7 @@
     "homepage": "https://webnet.fr",
     "license": "MIT",
     "require": {
-        "php": "^7.2.5|^8.0.2",
+        "php": "^7.2.5|^8.1",
         "symfony/console": "^5.4|^6.0",
         "symfony/framework-bundle": "^5.4|^6.0",
         "symfony/doctrine-bridge": "^5.4|^6.0",
@@ -20,8 +20,8 @@
         "doctrine/annotations": "^1.6",
         "phpunit/phpunit": "^7.4",
         "fakerphp/faker": "^1.21",
-        "symfony/config": "^4.2",
-        "symfony/yaml": "^4.2",
+        "symfony/config": "^5.4|^6.0",,
+        "symfony/yaml": "^5.4|^6.0",
         "doctrine/orm": "^2.6",
         "matthiasnoback/symfony-dependency-injection-test": "^4.3",
         "doctrine/doctrine-bundle": "^1.11"
