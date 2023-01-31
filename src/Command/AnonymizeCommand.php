@@ -5,7 +5,7 @@ namespace WebnetFr\DatabaseAnonymizerBundle\Command;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use  Doctrine\Bundle\DoctrineBundle\Registry as  RegistryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -126,7 +126,7 @@ class AnonymizeCommand extends Command
         $question = new ConfirmationQuestion('Are you sure you want to anonymize your database?', true);
 
         if (!$questionHelper->ask($input, $output, $question)) {
-            return;
+            return self::FAILURE ;
         }
 
         $em = null;
@@ -169,13 +169,13 @@ class AnonymizeCommand extends Command
             if (!$em) {
                 $output->writeln('<error>You must pass entity manager name in "--em" option. Pass "--em=default" if there is only one entity manager.</error>');
 
-                return;
+                return self::FAILURE ;
             }
 
             if (!$this->annotationConfigFactory) {
                 $output->writeln('<error>You must enable Doctrine annotations: "annotations.reader" service is required.</error>');
 
-                return;
+                return self::FAILURE ;
             }
 
             $config = $this->annotationConfigFactory->getConfig($em->getMetadataFactory()->getAllMetadata());
@@ -184,7 +184,7 @@ class AnonymizeCommand extends Command
             if (!is_file($configFilePath)) {
                 $output->writeln(sprintf('<error>Configuration file "%s" does not exist.</error>', $configFile));
 
-                return;
+                return self::FAILURE ;
             }
 
             $config = $this->getConfigFromFile($configFilePath);
@@ -204,5 +204,6 @@ class AnonymizeCommand extends Command
 
         $anonymizer = new Anonymizer();
         $anonymizer->anonymize($connection, $targetTables);
+        return self::SUCCESS ;
     }
 }
