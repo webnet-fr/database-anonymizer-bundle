@@ -63,7 +63,7 @@ trait SystemTestTrait
         $schema = $schemaManager->createSchema();
 
         $user = $schema->createTable('users');
-        $user->addColumn('id', 'integer', ['id' => true, 'unsigned' => true, 'unique']);
+        $user->addColumn('id', 'integer', ['unsigned' => true]);
         $user->addColumn('email', 'string', ['length' => 256, 'notnull' => false]);
         $user->addColumn('firstname', 'string', ['length' => 256, 'notnull' => false]);
         $user->addColumn('lastname', 'string', ['length' => 256, 'notnull' => false]);

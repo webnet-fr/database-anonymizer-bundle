@@ -14,17 +14,17 @@
         "symfony/console": "^5.4|^6.0",
         "symfony/framework-bundle": "^5.4|^6.0",
         "symfony/doctrine-bridge": "^5.4|^6.0",
-        "webnet-fr/database-anonymizer": "^0.0.6"
+        "dragonniers/database-anonymizer": "^0.0.1"
     },
     "require-dev": {
         "doctrine/annotations": "^1.6",
-        "phpunit/phpunit": "^7.4",
+        "phpunit/phpunit": "^9.5.28",
         "fakerphp/faker": "^1.21",
-        "symfony/config": "^5.4|^6.0",,
+        "symfony/config": "^5.4|^6.0",
         "symfony/yaml": "^5.4|^6.0",
         "doctrine/orm": "^2.6",
         "matthiasnoback/symfony-dependency-injection-test": "^4.3",
-        "doctrine/doctrine-bundle": "^1.11"
+        "doctrine/doctrine-bundle": "^2.8.2"
     },
     "suggest": {
         "doctrine/annotations": "To enable annotations.",
