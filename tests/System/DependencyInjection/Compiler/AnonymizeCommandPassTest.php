@@ -20,7 +20,7 @@ class AnonymizeCommandPassTest extends AbstractCompilerPassTestCase
     /**
      * {@inheritdoc}
      */
-    protected function registerCompilerPass(ContainerBuilder $container)
+    protected function registerCompilerPass(ContainerBuilder $container) : void
     {
         $container->addCompilerPass(new AnonymizeCommandPass());
         $container->prependExtensionConfig('webnet_fr_database_anonymizer', $this->getConfig());
